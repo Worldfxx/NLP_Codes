@@ -1,0 +1,27 @@
+# Required Libraries
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+from nltk import download
+
+# Download the VADER lexicon
+download('vader_lexicon')
+
+# Function to predict sentiment
+def predict_sentiment(text):
+    # Initialize the VADER sentiment intensity analyzer
+    sia = SentimentIntensityAnalyzer()
+    
+    # Get the sentiment scores
+    sentiment_scores = sia.polarity_scores(text)
+    
+    # Decide sentiment as positive, negative, and neutral
+    if sentiment_scores['compound'] >= 0.05:
+        return 'Positive'
+    elif sentiment_scores['compound'] <= -0.05:
+        return 'Negative'
+    else:
+        return 'Neutral'
+
+# Test the function with user input
+user_input = input("Enter a sentence to analyze its sentiment: ")
+print(predict_sentiment(user_input))
