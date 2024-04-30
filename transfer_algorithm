@@ -1,0 +1,32 @@
+# Required Libraries
+import pandas as pd
+import torch
+from transformers import BertTokenizer, BertForSequenceClassification
+from sklearn.model_selection import train_test_split
+
+# Load the data
+df = pd.read_csv('sentiment_data.csv')
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(df['Text'], df['Sentiment'], test_size=0.2, random_state=42)
+
+# Load the pre-trained BERT model and the tokenizer
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+
+# Define a function to predict sentiment
+def predict_sentiment(sentence):
+   # Tokenize the sentence and convert it to tensor
+   inputs = tokenizer(sentence, return_tensors='pt')
+
+   # Get the model outputs
+   outputs = model(**inputs)
+
+   # Get the predicted sentiment
+   _, predicted = torch.max(outputs.logits, 1)
+
+   return 'Positive' if predicted == 1 else 'Negative'
+
+# Test the function
+print(predict_sentiment("I love this product!"))
+print(predict_sentiment("This product is terrible."))
