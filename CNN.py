@@ -1,0 +1,44 @@
+import numpy as np
+import pandas as pd
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers.convolutional import Conv1D, MaxPooling1D
+from keras.utils import to_categorical
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+
+# Load and prepare the data
+data = pd.read_csv('sentiment_data.csv')
+labels = pd.get_dummies(data['label']).values
+texts = data['text'].tolist()
+
+# Preprocess the text
+tokenizer = Tokenizer(num_words=5000)
+tokenizer.fit_on_texts(texts)
+sequences = tokenizer.texts_to_sequences(texts)
+vocab_size = len(tokenizer.word_index) + 1
+
+# Pad sequences
+max_len = max([len(seq) for seq in sequences])
+padded = pad_sequences(sequences, maxlen=max_len)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(padded, labels, test_size=0.2, random_state=42)
+
+# Build the CNN model
+model = Sequential()
+model.add(Conv1D(filters=128, kernel_size=5, activation='relu', input_shape=(max_len, vocab_size)))
+model.add(MaxPooling1D(pool_size=4))
+model.add(Flatten())
+model.add(Dense(50, activation='relu'))
+model.add(Dense(y_train.shape[1], activation='softmax'))
+
+# Compile the model
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Train the model
+model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.1)
+
+# Evaluate the model
+loss, acc = model.evaluate(X_test, y_test)
+print(f"Test Loss: {loss}, Test Accuracy: {acc}")
